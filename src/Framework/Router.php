@@ -13,34 +13,36 @@ class Router
             'method' => strtoupper($method),
             'handler' => $handler,
         ];
-    } 
+    }
 
     private function normalizePath(string $path): string
     {
         $path = "/{$path}/";
 
         $path = preg_replace('/[\/]+/', '/', $path);
-       
+
         return strtolower($path);
     }
 
-    public function dispatch(string $path, string $method): void
+    public function dispatch(string $path, string $method, Container $container = null): void
     {
         $path = $this->normalizePath($path);
 
         $method = strtoupper($method);
 
-        foreach($this->routes as $route) {
+        foreach ($this->routes as $route) {
             if (
-                !preg_match("#^{$route['path']}$#", $path, $matches) || 
+                !preg_match("#^{$route['path']}$#", $path, $matches) ||
                 $route['method'] !== $method
             ) {
                 continue;
-            } 
-            
+            }
+
             [$className, $methodName] = $route['handler'];
 
-            $controllerInstance = new $className();
+            $controllerInstance = $container ?
+                $container->resolve($className) :
+                new $className;
 
             $controllerInstance->{$methodName}();
         }

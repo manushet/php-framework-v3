@@ -6,17 +6,18 @@ namespace App\Controllers;
 
 use Framework\TemplateEngine;
 
-class HomeController
+class AboutController
 {
     public function __construct(
         private TemplateEngine $templateEngine
     ) {
     }
 
-    public function home(): void
+    public function about(): void
     {
-        echo $this->templateEngine->render("/index.php", [
-            'title' => 'Home page'
+        echo $this->templateEngine->render("/about.php", [
+            'title' => 'About us',
+            'maliciousData' => '<script>alert(123)</script>',
         ]);
     }
 }
