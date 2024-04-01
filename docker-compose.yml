@@ -1,0 +1,70 @@
+version: '3'
+
+networks:
+    php-framework-network:
+
+services:                            
+    nginx:
+        build:
+            context: ./docker/nginx
+            dockerfile: Dockerfile
+        ports:
+            - 8000:80
+        volumes:
+            - .:/app  
+        networks:
+            - php-framework-network    
+        extra_hosts:
+            - host.docker.internal:host-gateway    
+        depends_on:
+            - php_fpm
+    postgres:
+        build: 
+            context: ./docker/postgres      
+            dockerfile: Dockerfile
+        environment:
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_USER=admin
+            - POSTGRES_DB=sample_db
+            - TZ=Asia/Bangkok
+            - LANG=C.UTF-8
+        cap_add:
+            - SYS_NICE
+        volumes:
+            - ./database_data:/var/lib/postgresql/data:rw
+        ports:
+            - 5432:5432
+        networks:
+            - php-framework-network     
+        restart: always     
+    adminer:
+        image: adminer
+        ports:
+            - 8080:8080
+        networks:
+            - php-framework-network           
+        depends_on:
+            - postgres      
+    php_fpm:
+        build:
+            context: ./
+            dockerfile: ./docker/php/Dockerfile
+        tty: true
+        volumes:
+            - .:/app
+        working_dir: /app
+        environment:
+            - PHP_IDE_CONFIG=serverName=php_framework.loc
+            - XDEBUG_MODES=develop,debug
+            - REMOTE_HOST=host.docker.internal
+            - REMOTE_PORT=9003
+            - IDE_KEY=docker
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        networks:
+            - php-framework-network   
+        restart: always
+        depends_on:
+            - postgres 
+volumes:
+    database_data:
