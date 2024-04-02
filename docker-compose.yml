@@ -25,7 +25,7 @@ services:
         environment:
             - POSTGRES_PASSWORD=password
             - POSTGRES_USER=admin
-            - POSTGRES_DB=sample_db
+            - POSTGRES_DB=phpiggy
             - TZ=Asia/Bangkok
             - LANG=C.UTF-8
         cap_add:
