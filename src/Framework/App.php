@@ -41,4 +41,9 @@ class App
     {
         $this->router->add('POST', $path, $handler);
     }
+
+    public function addMiddleware(string $middleware): void
+    {
+        $this->router->addMiddleware($middleware);
+    }
 }
