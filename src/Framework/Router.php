@@ -12,10 +12,16 @@ class Router
 
     public function add(string $method, string $path, array $handler): void
     {
+        $path = $this->normalizePath($path);
+
+        $regexPath = preg_replace('#{[^/]+}#', '([^/]+)', $path);
+
         $this->routes[] = [
-            'path' => $this->normalizePath($path),
+            'path' => $path,
             'method' => strtoupper($method),
             'handler' => $handler,
+            'middlewares' => [],
+            'regexPath' => $regexPath,
         ];
     }
 
@@ -32,15 +38,23 @@ class Router
     {
         $path = $this->normalizePath($path);
 
-        $method = strtoupper($method);
+        $method = strtoupper($_POST['_METHOD'] ?? $method);
 
         foreach ($this->routes as $route) {
             if (
-                !preg_match("#^{$route['path']}$#", $path, $matches) ||
+                !preg_match("#^{$route['regexPath']}$#", $path, $paramValues) ||
                 $route['method'] !== $method
             ) {
                 continue;
             }
+
+            array_shift($paramValues);
+
+            preg_match_all('#{([^/]+)}#', $route['path'], $paramKeys);
+
+            $paramKeys = $paramKeys[1];
+
+            $params = array_combine($paramKeys, $paramValues);
 
             [$className, $methodName] = $route['handler'];
 
@@ -48,9 +62,11 @@ class Router
                 $container->resolve($className) :
                 new $className;
 
-            $action = fn () => $controllerInstance->{$methodName}();
+            $action = fn () => $controllerInstance->{$methodName}($params);
 
-            foreach ($this->middlewares as $middleware) {
+            $allMiddlwares = [...$route['middlewares'], ...$this->middlewares];
+
+            foreach ($allMiddlwares as $middleware) {
                 /**
                  * @var MiddlewareInterface $middlewareInstance
                  */
@@ -70,5 +86,12 @@ class Router
     public function addMiddleware(string $middleware)
     {
         $this->middlewares[] = $middleware;
+    }
+
+    public function addRouteMiddleware(string $middleware)
+    {
+        $lastRouteKey = array_key_last($this->routes);
+
+        $this->routes[$lastRouteKey]['middlewares'][] = $middleware;
     }
 }

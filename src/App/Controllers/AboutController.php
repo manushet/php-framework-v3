@@ -16,7 +16,7 @@ class AboutController
     public function about(): void
     {
         echo $this->templateEngine->render("/about.php", [
-            //'title' => 'About us',
+            'title' => 'About us',
             'maliciousData' => '<script>alert(123)</script>',
         ]);
     }

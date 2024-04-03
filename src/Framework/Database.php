@@ -8,6 +8,8 @@ class Database
 {
     private ?\PDO $connection = null;
 
+    private ?\PDOStatement $stmt = null;
+
     public function __construct(
         string $driver,
         array $config,
@@ -30,8 +32,32 @@ class Database
         $this->connection->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
     }
 
-    public function query(string $query)
+    public function query(string $query, array $params = []): Database
     {
-        return $this->connection->query($query);
+        $this->stmt = $this->connection->prepare($query);
+
+        $this->stmt->execute($params);
+
+        return $this;
+    }
+
+    public function count()
+    {
+        return $this->stmt->fetchColumn();
+    }
+
+    public function findAll(): ?array
+    {
+        return $this->stmt->fetchAll();
+    }
+
+    public function findOne(): object|false
+    {
+        return $this->stmt->fetch();
+    }
+
+    public function id(): mixed
+    {
+        return $this->connection->lastInsertId();
     }
 }

@@ -32,18 +32,34 @@ class App
         $this->router->dispatch($path, $method, $this->container);
     }
 
-    public function get(string $path, array $handler): void
+    public function get(string $path, array $handler): static
     {
         $this->router->add('GET', $path, $handler);
+
+        return $this;
     }
 
-    public function post(string $path, array $handler): void
+    public function post(string $path, array $handler): static
     {
         $this->router->add('POST', $path, $handler);
+
+        return $this;
+    }
+
+    public function delete(string $path, array $handler): static
+    {
+        $this->router->add('DELETE', $path, $handler);
+
+        return $this;
     }
 
     public function addMiddleware(string $middleware): void
     {
         $this->router->addMiddleware($middleware);
+    }
+
+    public function addRouteMiddleware(string $middleware): void
+    {
+        $this->router->addRouteMiddleware($middleware);
     }
 }

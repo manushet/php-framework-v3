@@ -3,21 +3,40 @@
 declare(strict_types=1);
 
 use App\config\Paths;
-use App\Services\ValidatorService;
+use App\Services\ReceiptService;
 use Framework\Database;
+use Framework\Container;
+use App\Services\UserService;
 use Framework\TemplateEngine;
+use App\Services\ValidatorService;
+use App\Services\TransactionService;
 
 return [
     TemplateEngine::class => fn () => new TemplateEngine(Paths::VIEW),
     ValidatorService::class => fn () => new ValidatorService(),
-    Database::class, fn () => new Database(
-        getenv('DB_DRIVER'),
+    Database::class => fn () => new Database(
+        $_ENV['DB_DRIVER'],
         [
-            'host' => getenv('DB_HOST'),
-            'port' => getenv('DB_PORT'),
-            'dbname' => getenv('DB_DBNAME'),
+            'host' => $_ENV['DB_HOST'],
+            'port' => $_ENV['DB_PORT'],
+            'dbname' => $_ENV['DB_DBNAME'],
         ],
-        getenv('DB_USER'),
-        getenv('DB_PASSWORD'),
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASSWORD']
     ),
+    UserService::class => function (Container $container) {
+        $db = $container->get(Database::class);
+
+        return new UserService($db);
+    },
+    TransactionService::class => function (Container $container) {
+        $db = $container->get(Database::class);
+
+        return new TransactionService($db);
+    },
+    ReceiptService::class => function (Container $container) {
+        $db = $container->get(Database::class);
+
+        return new ReceiptService($db);
+    }
 ];

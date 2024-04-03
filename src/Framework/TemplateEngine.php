@@ -14,7 +14,7 @@ class TemplateEngine
 
     public function render(string $template, array $data = []): string
     {
-        extract(array_map(fn ($param) => htmlspecialchars($param), $data), EXTR_SKIP);
+        extract($data, EXTR_SKIP);
         extract($this->globalTemplateData, EXTR_SKIP);
 
         ob_start();

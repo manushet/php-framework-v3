@@ -10,6 +10,7 @@ include_once($this->resolve('partials/_header.php'));
 
 <section class="max-w-2xl mx-auto mt-12 p-4 bg-white shadow-md border border-gray-200 rounded">
     <form class="grid grid-cols-1 gap-6" action="" method="POST">
+        <?php include_once($this->resolve('partials/_csrf.php')); ?>
         <!-- Email -->
         <label class="block">
             <span class="text-gray-700">Email address</span>
