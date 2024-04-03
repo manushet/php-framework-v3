@@ -7,8 +7,8 @@ use Framework\Contracts\MiddlewareInterface;
 class Router
 {
     private array $routes = [];
-
     private array $middlewares = [];
+    private array $errorHandler;
 
     public function add(string $method, string $path, array $handler): void
     {
@@ -81,6 +81,8 @@ class Router
 
             return;
         }
+
+        $this->dispatchNotFound($container);
     }
 
     public function addMiddleware(string $middleware)
@@ -93,5 +95,27 @@ class Router
         $lastRouteKey = array_key_last($this->routes);
 
         $this->routes[$lastRouteKey]['middlewares'][] = $middleware;
+    }
+
+    public function setErrorHandler(array $controller)
+    {
+        $this->errorHandler = $controller;
+    }
+
+    public function dispatchNotFound(?Container $container)
+    {
+        [$class, $function] = $this->errorHandler;
+
+        $controllerInstance = $container ? $container->resolve($class) : $class;
+
+        $action = fn () => $controllerInstance->{$function}();
+
+        foreach ($this->middlewares as $middleware) {
+            $middlewareIntance = $container ? $container->resolve($middleware) : $middleware;
+
+            $action = fn () => $middlewareIntance->process($action);
+        }
+
+        $action();
     }
 }

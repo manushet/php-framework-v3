@@ -8,6 +8,7 @@ use Framework\App;
 use App\Controllers\HomeController;
 use App\Controllers\AboutController;
 use App\Controllers\AuthController;
+use App\Controllers\ErrorController;
 use App\Controllers\ReceiptController;
 use App\Controllers\TransactionController;
 use App\Middleware\AuthRequiredMiddleware;
@@ -77,4 +78,6 @@ function registerRoutes(App $app)
     $app
         ->delete('/transaction/{transaction}/receipt/{receipt}', [ReceiptController::class, 'delete'])
         ->addRouteMiddleware(AuthRequiredMiddleware::class);
+
+    $app->setErrorHandler([ErrorController::class, 'notFound']);
 }
